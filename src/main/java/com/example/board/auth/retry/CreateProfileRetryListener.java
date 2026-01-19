@@ -10,7 +10,7 @@ public class CreateProfileRetryListener implements RetryListener {
 
     @Override
     public void onRetryableExecution(RetryPolicy retryPolicy, Retryable<?> retryable, RetryState retryState) {
-        int retryCount = retryState.getRetryCount();
+        var retryCount = retryState.getRetryCount();
         if(retryState.isSuccessful()) {
             if(retryCount > 0) {
                 log.info("[RETRY]: SUCCESS, [ATTEMPT]: {}", retryCount);
