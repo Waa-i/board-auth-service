@@ -52,13 +52,13 @@ public class DataSourceConfig {
             @Qualifier("writeDataSource") DataSource writeDataSource,
             @Qualifier("readDataSource") DataSource readDataSource
     ) {
-        AbstractRoutingDataSource routingDataSource = new AbstractRoutingDataSource() {
+        var routingDataSource = new AbstractRoutingDataSource() {
             @Override
             protected Object determineCurrentLookupKey() {
                 return TransactionSynchronizationManager.isCurrentTransactionReadOnly() ? DbType.READ : DbType.WRITE;
             }
         };
-        Map<Object, Object> targetDataSources = new HashMap<>();
+        var targetDataSources = new HashMap<>();
         targetDataSources.put(DbType.WRITE, writeDataSource);
         targetDataSources.put(DbType.READ, readDataSource);
 

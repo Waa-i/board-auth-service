@@ -1,9 +1,9 @@
 package com.example.board.auth.controller;
 
 import com.example.board.auth.annotation.SignUpProof;
+import com.example.board.auth.dto.command.EmailVerificationSendCommand;
 import com.example.board.auth.dto.command.EmailVerificationVerifyCommand;
 import com.example.board.auth.dto.command.MemberSignUpCommand;
-import com.example.board.auth.dto.command.EmailVerificationSendCommand;
 import com.example.board.auth.dto.request.EmailVerificationSendRequest;
 import com.example.board.auth.dto.request.EmailVerificationVerifyRequest;
 import com.example.board.auth.dto.request.MemberSignUpRequest;

@@ -34,7 +34,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     private SimpleMailMessage getSimpleMailMessage(MailMessage message) {
-        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
+        var simpleMailMessage = new SimpleMailMessage();
         simpleMailMessage.setTo(message.to());
         simpleMailMessage.setFrom(from);
         simpleMailMessage.setSubject(message.subject());
