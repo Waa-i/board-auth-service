@@ -104,7 +104,7 @@ public class MemberSignUpOrchestratorImpl implements MemberSignUpOrchestrator {
         try {
             return new CreateCredentialResult.Success(memberCredentialTransactionService.createCredential(new MemberCredentialCreateCommand(command.username(), command.password(), command.email())));
         } catch (DataIntegrityViolationException e) {
-            String constraintName = findConstraintName(e);
+            var constraintName = findConstraintName(e);
             if(MEMBER_CREDENTIAL_USERNAME_CONSTRAINT_NAME.equals(constraintName)) {
                 return new CreateCredentialResult.UsernameDuplicate();
             }

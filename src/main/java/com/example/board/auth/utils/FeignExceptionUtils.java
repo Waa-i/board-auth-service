@@ -18,8 +18,10 @@ public class FeignExceptionUtils {
     }
 
     private String extractApiCode(FeignException e) {
-        String body = e.contentUTF8();
-        if(body == null || body.isBlank()) return null;
+        var body = e.contentUTF8();
+        if(body == null || body.isBlank()) {
+            return null;
+        }
         var response = jsonMapper.readValue(body, new TypeReference<ApiResponse<Void>>() {});
         return response.code();
     }
