@@ -33,6 +33,11 @@ public class MemberController {
         var result = memberService.signUp(new MemberSignUpCommand(request.username(), request.password(), request.email(), request.nickname(), token));
 
         return switch (result) {
+            case SignUpResult.DisAllowedDomain _ -> {
+                var code = EmailVerificationErrorCode.DISALLOWED_EMAIL_DOMAIN;
+                yield ResponseEntity.status(code.getHttpStatus())
+                        .body(ApiResponse.error(code));
+            }
             case SignUpResult.EmailVerificationExpired _ -> {
                 var code = EmailVerificationErrorCode.SIGNUP_PROOF_TOKEN_EXPIRED;
                 yield ResponseEntity.status(code.getHttpStatus())
@@ -105,15 +110,15 @@ public class MemberController {
         var result = memberService.isEmailAvailable(email);
 
         return switch (result) {
-            case VerifyEmailResult.DisAllowed(var message) ->
+            case EmailAvailabilityResult.DisAllowed(var message) ->
                 ResponseEntity.status(code.getHttpStatus())
                         .body(ApiResponse.success(code, AvailabilityData.no(message)));
 
-            case VerifyEmailResult.Used(var message) ->
+            case EmailAvailabilityResult.Used(var message) ->
                 ResponseEntity.status(code.getHttpStatus())
                         .body(ApiResponse.success(code, AvailabilityData.no(message)));
 
-            case VerifyEmailResult.Available(var message) ->
+            case EmailAvailabilityResult.Available(var message) ->
                 ResponseEntity.status(code.getHttpStatus())
                         .body(ApiResponse.success(code, AvailabilityData.ok(message)));
         };
@@ -122,9 +127,19 @@ public class MemberController {
     @PostMapping("/email-verifications")
     public ResponseEntity<ApiResponse<EmailVerificationSendResponse>> sendOtp(@RequestBody EmailVerificationSendRequest request) {
         var result = emailVerificationService.sendEmailOtp(new EmailVerificationSendCommand(request.email()));
-        var code = EmailVerificationSuccessCode.OTP_SENT;
-        return ResponseEntity.status(code.getHttpStatus())
-                .body(ApiResponse.success(code, result));
+
+        return switch (result) {
+            case EmailVerificationSendResult.Success(var response) -> {
+                var code = EmailVerificationSuccessCode.OTP_SENT;
+                yield ResponseEntity.status(code.getHttpStatus())
+                        .body(ApiResponse.success(code, response));
+            }
+            case EmailVerificationSendResult.DisAllowedDomain _ -> {
+                var code = EmailVerificationErrorCode.DISALLOWED_EMAIL_DOMAIN;
+                yield ResponseEntity.status(code.getHttpStatus())
+                        .body(ApiResponse.error(code));
+            }
+        };
     }
 
     @PostMapping("/email-verifications/verify")

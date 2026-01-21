@@ -5,6 +5,7 @@ import com.example.board.auth.dto.command.EmailVerificationSendCommand;
 import com.example.board.auth.dto.command.EmailVerificationVerifyCommand;
 import com.example.board.auth.dto.request.MailMessage;
 import com.example.board.auth.dto.response.EmailVerificationSendResponse;
+import com.example.board.auth.dto.response.EmailVerificationSendResult;
 import com.example.board.auth.dto.response.EmailVerificationVerifyResponse;
 import com.example.board.auth.dto.response.SignUpEmailVerificationResult;
 import com.example.board.auth.repository.EmailVerificationRepository;
@@ -12,6 +13,7 @@ import com.example.board.auth.service.EmailService;
 import com.example.board.auth.service.EmailVerificationService;
 import com.example.board.auth.service.OtpGenerator;
 import com.example.board.auth.service.SignUpProofTokenGenerator;
+import com.example.board.auth.utils.EmailDomainPolicy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,9 +27,14 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     private final SignUpProofTokenGenerator tokenGenerator;
     private final EmailVerificationRepository emailVerificationRepository;
     private final EmailVerificationProps emailVerificationProps;
+    private final EmailDomainPolicy emailDomainPolicy;
 
     @Override
-    public EmailVerificationSendResponse sendEmailOtp(EmailVerificationSendCommand command) {
+    public EmailVerificationSendResult sendEmailOtp(EmailVerificationSendCommand command) {
+        // email 도메인 제약 조건 체크
+        if(!emailDomainPolicy.isDomainAllowed(command.email())) {
+            return new EmailVerificationSendResult.DisAllowedDomain();
+        }
         // otp 발급
         var otp = otpGenerator.generate();
         // otp 저장
@@ -35,7 +42,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         // 메일 전송
         var message = buildMailMessage(command.email(), otp);
         emailService.send(message);
-        return new EmailVerificationSendResponse(emailVerificationProps.otpTtl().toSeconds(), emailVerificationProps.resendCooldown().toSeconds());
+        return new EmailVerificationSendResult.Success(new EmailVerificationSendResponse(emailVerificationProps.otpTtl().toSeconds(), emailVerificationProps.resendCooldown().toSeconds()));
     }
 
     @Override

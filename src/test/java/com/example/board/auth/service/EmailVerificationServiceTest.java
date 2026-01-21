@@ -5,11 +5,13 @@ import com.example.board.auth.dto.command.EmailVerificationSendCommand;
 import com.example.board.auth.dto.command.EmailVerificationVerifyCommand;
 import com.example.board.auth.dto.request.MailMessage;
 import com.example.board.auth.dto.response.EmailVerificationSendResponse;
+import com.example.board.auth.dto.response.EmailVerificationSendResult;
 import com.example.board.auth.dto.response.EmailVerificationVerifyResponse;
 import com.example.board.auth.dto.response.SignUpEmailVerificationResult;
 import com.example.board.auth.exception.TooManyEmailVerificationRequest;
 import com.example.board.auth.repository.EmailVerificationRepository;
 import com.example.board.auth.service.impl.EmailVerificationServiceImpl;
+import com.example.board.auth.utils.EmailDomainPolicy;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,34 +42,55 @@ class EmailVerificationServiceTest {
     private EmailVerificationRepository emailVerificationRepository;
     @Mock
     private EmailVerificationProps emailVerificationProps;
+    @Mock
+    private EmailDomainPolicy emailDomainPolicy;
     @InjectMocks
     private EmailVerificationServiceImpl emailVerificationService;
 
     @Test
     @DisplayName("otp 발급 및 이메일 전송 성공")
     void sendEmailOtp_success() {
-        String email = "testuser@gmail.com";
-        String otp = "123456";
+        var email = "testuser@gmail.com";
+        var otp = "123456";
         var command = new EmailVerificationSendCommand(email);
         var response = new EmailVerificationSendResponse(OTP_TTL.toSeconds(), RESEND_COOL_DOWN.toSeconds());
+        var expected = new EmailVerificationSendResult.Success(response);
+        when(emailDomainPolicy.isDomainAllowed(email)).thenReturn(true);
         when(otpGenerator.generate()).thenReturn(otp);
         doNothing().when(emailService).send(any(MailMessage.class));
         when(emailVerificationProps.otpTtl()).thenReturn(OTP_TTL);
         when(emailVerificationProps.resendCooldown()).thenReturn(RESEND_COOL_DOWN);
 
         var actual = emailVerificationService.sendEmailOtp(command);
-        assertThat(actual).isEqualTo(response);
+        assertThat(actual).isEqualTo(expected);
 
+        verify(emailDomainPolicy, times(1)).isDomainAllowed(email);
         verify(otpGenerator, times(1)).generate();
         verify(emailVerificationRepository, times(1)).saveSignUpOtp(email, otp);
         verify(emailService, times(1)).send(any(MailMessage.class));
     }
 
     @Test
+    @DisplayName("이메일 전송 실패 - 이메일 도메인 제약 조건 위반")
+    void sendEmailOtp_fail_when_domain_constraint_disallowed() {
+        var email = "testuser@example.com";
+        var command = new EmailVerificationSendCommand(email);
+        when(emailDomainPolicy.isDomainAllowed(email)).thenReturn(false);
+
+        var actual = emailVerificationService.sendEmailOtp(command);
+        assertThat(actual).isInstanceOf(EmailVerificationSendResult.DisAllowedDomain.class);
+
+        verify(emailDomainPolicy, times(1)).isDomainAllowed(email);
+        verify(otpGenerator, never()).generate();
+        verify(emailVerificationRepository, never()).saveSignUpOtp(eq(email), anyString());
+        verify(emailService, never()).send(any(MailMessage.class));
+    }
+    @Test
     @DisplayName("이메일 전송 실패 - 재전송 대기시간")
-    void sendEmailOtp_fail_resend_cooldown() {
-        String email = "testuser@gmail.com";
-        String otp = "123456";
+    void sendEmailOtp_fail_when_resend_cooldown() {
+        var email = "testuser@gmail.com";
+        var otp = "123456";
+        when(emailDomainPolicy.isDomainAllowed(email)).thenReturn(true);
         when(otpGenerator.generate()).thenReturn(otp);
         doThrow(TooManyEmailVerificationRequest.class).when(emailVerificationRepository).saveSignUpOtp(email, otp);
 
@@ -81,9 +104,9 @@ class EmailVerificationServiceTest {
     @Test
     @DisplayName("otp 검증 성공")
     void verifyOtp_success() {
-        String email = "testuser@gmail.com";
-        String otp = "123456";
-        String token = "abcde";
+        var email = "testuser@gmail.com";
+        var otp = "123456";
+        var token = "abcde";
         var command = new EmailVerificationVerifyCommand(email, otp);
         var response = new EmailVerificationVerifyResponse(token, SIGNUP_PROOF_TTL.toSeconds());
         var result = new SignUpEmailVerificationResult.Success(response);
@@ -104,9 +127,9 @@ class EmailVerificationServiceTest {
 
     @Test
     @DisplayName("otp 검증 실패 - otp 유효 기간이 지난 경우")
-    void verifyOtp_fail_expired() {
-        String email = "testuser@gmail.com";
-        String otp = "123456";
+    void verifyOtp_fail_when_expired() {
+        var email = "testuser@gmail.com";
+        var otp = "123456";
         var command = new EmailVerificationVerifyCommand(email, otp);
         var result = new SignUpEmailVerificationResult.Expired();
         when(emailVerificationRepository.getOtp(email)).thenReturn(null);
@@ -123,9 +146,9 @@ class EmailVerificationServiceTest {
     @Test
     @DisplayName("otp 검증 실패 - 사용자가 잘못된 otp를 보낸 경우")
     void verifyOtp_fail_mismatch() {
-        String email = "testuser@gmail.com";
-        String requestOtp = "123456";
-        String storedOtp = "654321";
+        var email = "testuser@gmail.com";
+        var requestOtp = "123456";
+        var storedOtp = "654321";
         var command = new EmailVerificationVerifyCommand(email, requestOtp);
         var result = new SignUpEmailVerificationResult.Invalid();
         when(emailVerificationRepository.getOtp(email)).thenReturn(storedOtp);
