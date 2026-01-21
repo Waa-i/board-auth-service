@@ -10,7 +10,6 @@ import com.example.board.auth.dto.response.SignUpEmailVerificationResult;
 import com.example.board.auth.exception.TooManyEmailVerificationRequest;
 import com.example.board.auth.repository.EmailVerificationRepository;
 import com.example.board.auth.service.impl.EmailVerificationServiceImpl;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,9 +20,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class EmailVerificationServiceTest {

@@ -23,9 +23,9 @@ public class MemberCredentialTransactionServiceImpl implements MemberCredentialT
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Long createCredential(MemberCredentialCreateCommand command) {
         var credential = MemberCredential.createMember(command.username(), bCryptPasswordEncoder.encode(command.password()), command.email());
-        memberCredentialRepository.saveAndFlush(credential);
-        log.info("회원 자격 증명 생성: {}", credential.getId());
-        return credential.getId();
+        var savedCredential = memberCredentialRepository.saveAndFlush(credential);
+        log.info("회원 자격 증명 생성: {}", savedCredential.getId());
+        return savedCredential.getId();
     }
 
     @Override
