@@ -5,7 +5,7 @@ import com.example.board.auth.dto.command.MemberSignUpCommand;
 import com.example.board.auth.dto.response.DeactivateResult;
 import com.example.board.auth.dto.response.SignUpResult;
 import com.example.board.auth.dto.response.UpdatePasswordResult;
-import com.example.board.auth.dto.response.VerifyEmailResult;
+import com.example.board.auth.dto.response.EmailAvailabilityResult;
 
 public interface MemberService {
     // 회원 가입 메서드
@@ -17,5 +17,5 @@ public interface MemberService {
     // 아이디 사용 가능 확인 메서드
     boolean isUsernameAvailable(String username);
     // 이메일 사용 가능 확인 메서드
-    VerifyEmailResult isEmailAvailable(String email);
+    EmailAvailabilityResult isEmailAvailable(String email);
 }

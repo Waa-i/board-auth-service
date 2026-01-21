@@ -5,7 +5,7 @@ import com.example.board.auth.dto.command.MemberSignUpCommand;
 import com.example.board.auth.dto.response.DeactivateResult;
 import com.example.board.auth.dto.response.SignUpResult;
 import com.example.board.auth.dto.response.UpdatePasswordResult;
-import com.example.board.auth.dto.response.VerifyEmailResult;
+import com.example.board.auth.dto.response.EmailAvailabilityResult;
 import com.example.board.auth.repository.EmailVerificationRepository;
 import com.example.board.auth.repository.MemberCredentialRepository;
 import com.example.board.auth.service.MemberService;
@@ -27,6 +27,10 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public SignUpResult signUp(MemberSignUpCommand command) {
+        // email 도메인 제약 조건 체크
+        if(!emailDomainPolicy.isDomainAllowed(command.email())) {
+            return new SignUpResult.DisAllowedDomain();
+        }
         // 회원가입 폼에서 인증된 이메일과 일치하는지 이메일 검증
         var storedEmail = emailVerificationRepository.consumeSignUpProof(command.token());
         if (storedEmail == null || storedEmail.isBlank()) {
@@ -58,13 +62,13 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public VerifyEmailResult isEmailAvailable(String email) {
+    public EmailAvailabilityResult isEmailAvailable(String email) {
         if(!emailDomainPolicy.isDomainAllowed(email)) {
-            return new VerifyEmailResult.DisAllowed("지메일과 네이버메일만 사용할 수 있습니다.");
+            return new EmailAvailabilityResult.DisAllowed("지메일과 네이버메일만 사용할 수 있습니다.");
         }
         if(memberCredentialRepository.existsByEmail(email)) {
-            return new VerifyEmailResult.Used("이미 사용 중인 이메일입니다.");
+            return new EmailAvailabilityResult.Used("이미 사용 중인 이메일입니다.");
         }
-        return new VerifyEmailResult.Available("사용 가능한 이메일입니다.");
+        return new EmailAvailabilityResult.Available("사용 가능한 이메일입니다.");
     }
 }
