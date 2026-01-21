@@ -50,8 +50,8 @@ class EmailVerificationServiceTest {
     @Test
     @DisplayName("otp 발급 및 이메일 전송 성공")
     void sendEmailOtp_success() {
-        String email = "testuser@gmail.com";
-        String otp = "123456";
+        var email = "testuser@gmail.com";
+        var otp = "123456";
         var command = new EmailVerificationSendCommand(email);
         var response = new EmailVerificationSendResponse(OTP_TTL.toSeconds(), RESEND_COOL_DOWN.toSeconds());
         var expected = new EmailVerificationSendResult.Success(response);
@@ -73,7 +73,7 @@ class EmailVerificationServiceTest {
     @Test
     @DisplayName("이메일 전송 실패 - 이메일 도메인 제약 조건 위반")
     void sendEmailOtp_fail_when_domain_constraint_disallowed() {
-        String email = "testuser@example.com";
+        var email = "testuser@example.com";
         var command = new EmailVerificationSendCommand(email);
         when(emailDomainPolicy.isDomainAllowed(email)).thenReturn(false);
 
@@ -88,8 +88,8 @@ class EmailVerificationServiceTest {
     @Test
     @DisplayName("이메일 전송 실패 - 재전송 대기시간")
     void sendEmailOtp_fail_when_resend_cooldown() {
-        String email = "testuser@gmail.com";
-        String otp = "123456";
+        var email = "testuser@gmail.com";
+        var otp = "123456";
         when(emailDomainPolicy.isDomainAllowed(email)).thenReturn(true);
         when(otpGenerator.generate()).thenReturn(otp);
         doThrow(TooManyEmailVerificationRequest.class).when(emailVerificationRepository).saveSignUpOtp(email, otp);
@@ -104,9 +104,9 @@ class EmailVerificationServiceTest {
     @Test
     @DisplayName("otp 검증 성공")
     void verifyOtp_success() {
-        String email = "testuser@gmail.com";
-        String otp = "123456";
-        String token = "abcde";
+        var email = "testuser@gmail.com";
+        var otp = "123456";
+        var token = "abcde";
         var command = new EmailVerificationVerifyCommand(email, otp);
         var response = new EmailVerificationVerifyResponse(token, SIGNUP_PROOF_TTL.toSeconds());
         var result = new SignUpEmailVerificationResult.Success(response);
@@ -128,8 +128,8 @@ class EmailVerificationServiceTest {
     @Test
     @DisplayName("otp 검증 실패 - otp 유효 기간이 지난 경우")
     void verifyOtp_fail_when_expired() {
-        String email = "testuser@gmail.com";
-        String otp = "123456";
+        var email = "testuser@gmail.com";
+        var otp = "123456";
         var command = new EmailVerificationVerifyCommand(email, otp);
         var result = new SignUpEmailVerificationResult.Expired();
         when(emailVerificationRepository.getOtp(email)).thenReturn(null);
@@ -146,9 +146,9 @@ class EmailVerificationServiceTest {
     @Test
     @DisplayName("otp 검증 실패 - 사용자가 잘못된 otp를 보낸 경우")
     void verifyOtp_fail_mismatch() {
-        String email = "testuser@gmail.com";
-        String requestOtp = "123456";
-        String storedOtp = "654321";
+        var email = "testuser@gmail.com";
+        var requestOtp = "123456";
+        var storedOtp = "654321";
         var command = new EmailVerificationVerifyCommand(email, requestOtp);
         var result = new SignUpEmailVerificationResult.Invalid();
         when(emailVerificationRepository.getOtp(email)).thenReturn(storedOtp);
