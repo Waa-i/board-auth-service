@@ -15,7 +15,7 @@ public class SecureRandomOtpGenerator implements OtpGenerator {
 
     @Override
     public String generate() {
-        var otp = String.format("%06d", secureRandom.nextInt(1_000_000));
+        var otp = "%06d".formatted(secureRandom.nextInt(1_000_000));
         log.info("otp 발급");
         return otp;
     }

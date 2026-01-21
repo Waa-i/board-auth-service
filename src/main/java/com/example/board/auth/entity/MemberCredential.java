@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "member_credential")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MemberCredential extends BaseEntity {
+public final class MemberCredential extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id")
@@ -60,9 +60,16 @@ public class MemberCredential extends BaseEntity {
     }
 
     public void activate() {
-        if(status == MemberStatus.PENDING || status == MemberStatus.DORMANT)
-            status = MemberStatus.ACTIVE;
-        else
+        if(status != MemberStatus.PENDING) {
             throw new IllegalMemberStatusChangeException("%s -> ACTIVE 상태로 변경할 수 없습니다.");
+        }
+        status = MemberStatus.ACTIVE;
+    }
+
+    public void reactivate() {
+        if(status != MemberStatus.DORMANT) {
+            throw new IllegalMemberStatusChangeException("%s -> ACTIVE 상태로 변경할 수 없습니다.");
+        }
+        status = MemberStatus.ACTIVE;
     }
 }

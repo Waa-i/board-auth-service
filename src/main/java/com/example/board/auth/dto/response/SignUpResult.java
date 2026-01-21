@@ -4,6 +4,7 @@ public sealed interface SignUpResult {
     record Success() implements SignUpResult {}
     record EmailVerificationExpired() implements SignUpResult {}
     record EmailMismatch() implements SignUpResult {}
+    record DisAllowedDomain() implements SignUpResult {}
     record UsernameDuplicate() implements SignUpResult {}
     record EmailDuplicate() implements SignUpResult {}
     record NicknameDuplicate() implements SignUpResult {}
