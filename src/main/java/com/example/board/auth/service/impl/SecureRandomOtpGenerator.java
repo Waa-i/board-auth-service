@@ -3,12 +3,13 @@ package com.example.board.auth.service.impl;
 import com.example.board.auth.service.OtpGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
 public class SecureRandomOtpGenerator implements OtpGenerator {
     private final SecureRandom secureRandom;

@@ -33,6 +33,11 @@ public class MemberController {
         var result = memberService.signUp(new MemberSignUpCommand(request.username(), request.password(), request.email(), request.nickname(), token));
 
         return switch (result) {
+            case SignUpResult.Success _ -> {
+                var code = MemberCredentialSuccessCode.CREDENTIAL_CREATED;
+                yield ResponseEntity.status(code.getHttpStatus())
+                        .body(ApiResponse.success(code));
+            }
             case SignUpResult.DisAllowedDomain _ -> {
                 var code = EmailVerificationErrorCode.DISALLOWED_EMAIL_DOMAIN;
                 yield ResponseEntity.status(code.getHttpStatus())
@@ -47,11 +52,6 @@ public class MemberController {
                 var code = EmailVerificationErrorCode.EMAIL_MISMATCH;
                 yield ResponseEntity.status(code.getHttpStatus())
                         .body(ApiResponse.error(code));
-            }
-            case SignUpResult.Success _ -> {
-                var code = MemberCredentialSuccessCode.CREDENTIAL_CREATED;
-                yield ResponseEntity.status(code.getHttpStatus())
-                        .body(ApiResponse.success(code));
             }
             case SignUpResult.UsernameDuplicate _ -> {
                 var code = MemberCredentialErrorCode.USERNAME_DUPLICATED;

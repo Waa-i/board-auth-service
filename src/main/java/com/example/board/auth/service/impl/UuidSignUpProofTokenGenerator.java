@@ -2,12 +2,13 @@ package com.example.board.auth.service.impl;
 
 import com.example.board.auth.service.SignUpProofTokenGenerator;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Slf4j
-@Service
+@Component
 public class UuidSignUpProofTokenGenerator implements SignUpProofTokenGenerator {
     @Override
     public String generate() {

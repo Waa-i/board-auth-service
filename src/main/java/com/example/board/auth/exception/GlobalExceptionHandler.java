@@ -1,14 +1,12 @@
 package com.example.board.auth.exception;
 
-import com.example.board.auth.dto.response.ApiCode;
-import com.example.board.auth.dto.response.ApiResponse;
-import com.example.board.auth.dto.response.CommonErrorCode;
-import com.example.board.auth.dto.response.EmailVerificationErrorCode;
+import com.example.board.auth.dto.response.*;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -35,6 +33,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiResponse<Void>> handleTypeMismatch() {
         return handleError(CommonErrorCode.MALFORMED_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidTokenException() {
+
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUsernameNotFoundException() {
+        return handleError(MemberCredentialErrorCode.NOT_FOUND);
     }
 
     @ExceptionHandler(UnHandleDataIntegrityViolationException.class)
